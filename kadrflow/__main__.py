@@ -24,6 +24,7 @@ def main() -> None:
     parser.add_argument("--reload", action="store_true")
     parser.add_argument("--open-browser", action="store_true", help="Open the local website after server startup")
     args = parser.parse_args()
+    os.environ["KADRFLOW_BIND_HOST"] = args.host
     if args.open_browser and args.reload:
         parser.error("--open-browser cannot be combined with --reload")
 
