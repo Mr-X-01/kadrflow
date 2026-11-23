@@ -7,7 +7,7 @@
 
 ```bash
 ./build_app.sh     # dist/KadrFlow.app
-./build_dmg.sh     # dist/KadrFlow-<версия>.dmg
+./build_dmg.sh     # dist/KadrFlow-<версия>-macOS-<arm64|x86_64>.dmg и ZIP
 ```
 
 Запуск без окна (для проверки):
