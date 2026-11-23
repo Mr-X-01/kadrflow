@@ -12,6 +12,9 @@ build_tools/
 *.log
 release/*/*.zip
 release/*/*.dmg
+release/*.exe
+release/*.zip
+release/SHA256SUMS-windows.txt
 desktop/vendor.tar.gz
 desktop/vendor/
 .venv-win/

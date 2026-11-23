@@ -588,9 +588,19 @@ def fetch_subtitles(url: str, dest_dir: Path, browser: Optional[str] = None) -> 
                 ydl.download([url])
         except Exception:  # noqa: BLE001
             continue
-        files = sorted(dest_dir.glob("subs*.vtt"))
+        files = list(dest_dir.glob("subs*.vtt"))
         if files:
-            return str(files[0])
+            # yt-dlp writes language codes into the filename (subs.ru.vtt).
+            # Lexical order would choose English before Russian.
+            def priority(path: Path) -> tuple[int, str]:
+                language = path.name.removeprefix("subs.").removesuffix(".vtt").lower()
+                if language == "ru" or language.startswith("ru-"):
+                    return (0, path.name)
+                if language == "en" or language.startswith("en-"):
+                    return (1, path.name)
+                return (2, path.name)
+
+            return str(min(files, key=priority))
     return None
 
 
