@@ -16,6 +16,7 @@ from pydantic import BaseModel, Field
 
 from . import (custom_fonts, db, jobs, pipeline, render, resources,
                settings as app_settings, system_stats, transcribe, utils)
+from .request_guard import trusted_request
 from ._version import __version__
 from .config import ASSETS_DIR, DATA_DIR, PROJECTS_DIR, WEB_DIR, ffmpeg
 
@@ -130,6 +131,10 @@ app.include_router(youtube_router)
 @app.middleware("http")
 async def _static_cache_headers(request, call_next):
     """Шрифты и статика неизменяемы в пределах сессии — не перекачиваем их каждым опросом."""
+    if not trusted_request(request.headers.get("host", ""),
+                           request.headers.get("origin"), request.method,
+                           request.headers.get("sec-fetch-site"), request.url.scheme):
+        return JSONResponse({"detail": "Недоверенный источник запроса"}, status_code=403)
     response = await call_next(request)
     path = request.url.path
     if path.startswith(("/fonts/", "/userfonts/", "/static/")):
@@ -403,7 +408,7 @@ def fonts() -> List[Dict[str, Any]]:
 
 @app.post("/api/fonts")
 async def font_upload(file: UploadFile = File(...)) -> Dict[str, Any]:
-    data = await file.read()
+    data = await file.read(MAX_FONT_BYTES + 1)
     if len(data) > MAX_FONT_BYTES:
         raise HTTPException(413, "Файл шрифта больше 24 МБ")
     try:

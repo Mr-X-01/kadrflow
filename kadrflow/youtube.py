@@ -256,14 +256,16 @@ def metadata(body: PublishIn) -> dict:
 
 def _upload(job: dict, snapshot: Path, payload: dict, cancel: threading.Event):
     service=None
+    media=None
     try:
         if cancel.is_set():
             _save_job(job,status='cancelled');return
         _save_job(job,status='uploading')
         from googleapiclient.http import MediaFileUpload
         service=_service(_credentials())
+        media=MediaFileUpload(str(snapshot),mimetype='video/mp4',chunksize=8*1024*1024,resumable=True)
         request=service.videos().insert(part='snippet,status,paidProductPlacementDetails',body=payload,
-                    media_body=MediaFileUpload(str(snapshot),mimetype='video/mp4',chunksize=8*1024*1024,resumable=True),notifySubscribers=False)
+                    media_body=media,notifySubscribers=False)
         result=None
         while result is None:
             if cancel.is_set():
@@ -277,9 +279,12 @@ def _upload(job: dict, snapshot: Path, payload: dict, cancel: threading.Event):
     except Exception:
         _save_job(job,status='error',error='Не удалось завершить загрузку. Проверьте подключение, квоту YouTube API и разрешения аккаунта. Перед повтором проверьте YouTube Studio: видео могло уже загрузиться.')
     finally:
-        if service: service.close()
-        snapshot.unlink(missing_ok=True)
-        with _LOCK: _CANCEL.pop(job['id'],None)
+        try:
+            if media: media.stream().close()
+            if service: service.close()
+        finally:
+            snapshot.unlink(missing_ok=True)
+            with _LOCK: _CANCEL.pop(job['id'],None)
 
 
 @router.post('/clips/{clip_id}/publish')
