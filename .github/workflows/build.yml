@@ -6,6 +6,15 @@ on:
     tags: ["v*"]
   pull_request:
   workflow_dispatch:
+    inputs:
+      mac_only:
+        description: "Build macOS and attach it to an existing release"
+        type: boolean
+        default: false
+      release_tag:
+        description: "Existing release tag for mac_only (for example v0.1.0)"
+        type: string
+        default: "v0.1.0"
 
 # Минимальные права: запись в релиз нужна только джобе release.
 permissions:
@@ -14,6 +23,7 @@ permissions:
 jobs:
   windows:
     name: Windows 10/11 x64
+    if: github.event_name != 'workflow_dispatch' || !inputs.mac_only
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -138,10 +148,86 @@ jobs:
             KadrFlow-*-Setup-windows-x64.exe
             SHA256SUMS-windows.txt
 
+  macos:
+    name: macOS ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            arch: arm64
+          - runner: macos-15-intel
+            arch: x86_64
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python3 -m venv .venv
+          .venv/bin/python -m pip install -r requirements-desktop.txt pyinstaller
+
+      - name: Download Whisper model
+        run: |
+          .venv/bin/python -c "from huggingface_hub import snapshot_download; snapshot_download('Systran/faster-whisper-small', local_dir='build/whisper-small', allow_patterns=['model.bin','config.json','tokenizer.json','vocabulary.txt'])"
+          expected=3e305921506d8872816023e4c273e75d2419fb89b24da97b4fe7bce14170d671
+          actual=$(shasum -a 256 build/whisper-small/model.bin | cut -d ' ' -f 1)
+          test "$actual" = "$expected"
+
+      - name: Build and sign app
+        run: bash build_app.sh
+
+      - name: Smoke test (headless HTTP)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(uname -m)" = "${{ matrix.arch }}"
+          app=dist/KadrFlow.app/Contents/MacOS/KadrFlow
+          test -x "$app"
+          export KADRFLOW_HEADLESS=1
+          export KADRFLOW_DATA="$RUNNER_TEMP/kadrflow-smoke"
+          export KADRFLOW_PORT=8799
+          "$app" > "$RUNNER_TEMP/kadrflow.log" 2>&1 &
+          pid=$!
+          trap 'kill "$pid" 2>/dev/null || true; cat "$RUNNER_TEMP/kadrflow.log"' EXIT
+          ready=0
+          for _ in {1..80}; do
+            if curl -fsS http://127.0.0.1:8799/api/health -o "$RUNNER_TEMP/health.json"; then
+              ready=1
+              break
+            fi
+            sleep 0.5
+          done
+          test "$ready" -eq 1
+          export EXPECTED_VERSION=$(.venv/bin/python tools/version.py)
+          .venv/bin/python -c 'import json,os; data=json.load(open(os.environ["RUNNER_TEMP"] + "/health.json")); assert data["ok"] and data["version"] == os.environ["EXPECTED_VERSION"], data'
+
+      - name: Package macOS app
+        run: |
+          bash build_dmg.sh
+          version=$(.venv/bin/python tools/version.py)
+          test -s "dist/KadrFlow-${version}-macOS-${{ matrix.arch }}.zip"
+          test -s "dist/KadrFlow-${version}-macOS-${{ matrix.arch }}.dmg"
+          cd dist
+          shasum -a 256 "KadrFlow-${version}-macOS-${{ matrix.arch }}.zip" "KadrFlow-${version}-macOS-${{ matrix.arch }}.dmg" > "SHA256SUMS-macOS-${{ matrix.arch }}.txt"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-${{ matrix.arch }}
+          path: |
+            dist/KadrFlow-*-macOS-${{ matrix.arch }}.zip
+            dist/KadrFlow-*-macOS-${{ matrix.arch }}.dmg
+            dist/SHA256SUMS-macOS-${{ matrix.arch }}.txt
+
   release:
     name: GitHub Release
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [windows]
+    needs: [windows, macos]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -155,6 +241,33 @@ jobs:
           path: artifacts
       - uses: softprops/action-gh-release@v2
         with:
-          files: artifacts/windows-release/*
+          files: |
+            artifacts/windows-release/*
+            artifacts/macos-arm64/*
+            artifacts/macos-x86_64/*
           body_path: release/v${{ steps.version.outputs.value }}/RELEASE_NOTES.md
           fail_on_unmatched_files: true
+
+  release-macos:
+    name: Add macOS to existing release
+    if: github.event_name == 'workflow_dispatch' && inputs.mac_only
+    needs: [macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: macos-*
+          path: artifacts
+      - name: Upload macOS assets and update notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
+        run: |
+          set -euo pipefail
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          gh release view "$RELEASE_TAG" >/dev/null
+          gh release upload "$RELEASE_TAG" artifacts/macos-arm64/* artifacts/macos-x86_64/* --clobber
+          gh release edit "$RELEASE_TAG" --notes-file "release/${RELEASE_TAG}/RELEASE_NOTES.md"

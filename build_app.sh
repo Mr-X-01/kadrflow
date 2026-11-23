@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Сборка KadrFlow.app (macOS, Apple Silicon)
+# Сборка KadrFlow.app на текущей архитектуре macOS (arm64 или x86_64).
 set -euo pipefail
 cd "$(dirname "$0")"
 

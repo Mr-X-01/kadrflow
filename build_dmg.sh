@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
-# Сборка дистрибутива: DMG (если разрешает система) + ZIP (всегда)
+# Сборка дистрибутива для архитектуры текущего Mac: DMG и ZIP.
 set -euo pipefail
 cd "$(dirname "$0")"
 
 VERSION="$(python3 tools/version.py)"
-NAME="KadrFlow-${VERSION}-macOS-arm64"
+ARCH="$(uname -m)"
+case "$ARCH" in arm64|x86_64) ;; *) echo "Неподдерживаемая архитектура: $ARCH" >&2; exit 1;; esac
+NAME="KadrFlow-${VERSION}-macOS-${ARCH}"
 
 APP="dist/KadrFlow.app"
 [ -d "$APP" ] || { echo "Сначала соберите приложение: ./build_app.sh"; exit 1; }
@@ -13,19 +15,16 @@ APP="dist/KadrFlow.app"
 ditto -c -k --sequesterRsrc --keepParent "$APP" "dist/${NAME}.zip"
 du -sh "dist/${NAME}.zip"
 
-# DMG — красивее, но требует прав на создание образов
+# DMG для установки через Finder.
 STAGE="build/dmg"
 rm -rf "$STAGE"
 mkdir -p "$STAGE"
-cp -R "$APP" "$STAGE/"
+ditto "$APP" "$STAGE/KadrFlow.app"
 # Инструкция для тестера: Gatekeeper, что проверить, куда смотреть в логе
 cp docs/MACOS-TEST.md "$STAGE/ЧИТАЙ-МЕНЯ.txt"
 ln -s /Applications "$STAGE/Applications"
 
-if hdiutil create -volname "KadrFlow" -srcfolder "$STAGE" -ov -format UDZO \
-    "dist/KadrFlow-${VERSION}.dmg" >/dev/null 2>&1; then
-  echo "DMG: dist/KadrFlow-${VERSION}.dmg"
-else
-  echo "DMG создать не удалось (нет прав) — используйте ZIP."
-fi
+hdiutil create -volname "KadrFlow" -srcfolder "$STAGE" -ov -format UDZO \
+    "dist/${NAME}.dmg" >/dev/null
+echo "DMG: dist/${NAME}.dmg"
 rm -rf "$STAGE"
