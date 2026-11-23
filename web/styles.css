@@ -121,7 +121,7 @@ a { color: inherit; text-decoration: none; }
   flex-direction: column;
   gap: 14px;
   padding: 22px 14px 18px;
-  background: linear-gradient(180deg, rgba(22, 22, 28, 0.72), rgba(8, 8, 12, 0.84));
+  background: linear-gradient(180deg, rgba(21, 33, 37, 0.72), rgba(16, 25, 28, 0.84));
   border-right: 1px solid var(--separator);
   backdrop-filter: blur(44px) saturate(170%);
   -webkit-backdrop-filter: blur(44px) saturate(170%);
@@ -268,7 +268,7 @@ a { color: inherit; text-decoration: none; }
   z-index: 70;
   border-radius: 16px;
   padding: 8px 10px 10px;
-  background: rgba(22, 22, 28, 0.82);
+  background: rgba(21, 33, 37, 0.82);
   border: 1px solid var(--hairline);
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(18px) saturate(1.2);
@@ -1086,7 +1086,7 @@ select option, select optgroup { background: #192428; color: var(--text); }
   font-size: 11px;
   font-weight: 700;
   color: #fff;
-  background: rgba(10, 10, 14, 0.55);
+  background: rgba(16, 25, 28, 0.55);
   border: 1px solid rgba(255, 255, 255, 0.14);
   backdrop-filter: blur(14px);
 }
@@ -1100,7 +1100,7 @@ select option, select optgroup { background: #192428; color: var(--text); }
   font-size: 11px;
   font-weight: 700;
   color: #f2f2f7;
-  background: rgba(10, 10, 14, 0.6);
+  background: rgba(16, 25, 28, 0.6);
   backdrop-filter: blur(14px);
   font-variant-numeric: tabular-nums;
 }
@@ -1161,9 +1161,9 @@ select option, select optgroup { background: #192428; color: var(--text); }
   border-radius: 12px;
   font-size: 12.5px;
   font-weight: 700;
-  color: #fff;
+  color: #10191c;
   background: var(--grad);
-  box-shadow: 0 8px 20px rgba(255, 120, 79, 0.26), inset 0 1px 0 rgba(255, 255, 255, 0.24);
+  box-shadow: none;
   transition: filter 0.16s, transform 0.16s;
   overflow: hidden;
   white-space: nowrap;
@@ -1180,12 +1180,12 @@ select option, select optgroup { background: #192428; color: var(--text); }
   place-items: center;
   border-radius: 10px;
   color: #fff;
-  background: rgba(10, 10, 14, 0.55);
+  background: rgba(16, 25, 28, 0.55);
   border: 1px solid rgba(255, 255, 255, 0.16);
   backdrop-filter: blur(14px);
   transition: 0.16s var(--ease);
 }
-.glass-btn:hover { background: rgba(10, 10, 14, 0.82); }
+.glass-btn:hover { background: rgba(16, 25, 28, 0.82); }
 .glass-btn svg { width: 14px; height: 14px; }
 
 .clip-card.rendering .clip-media::after {
@@ -1224,7 +1224,7 @@ select option, select optgroup { background: #192428; color: var(--text); }
   max-height: 92vh;
   overflow: auto;
   border-radius: var(--radius-xl);
-  background: rgba(24, 24, 29, 0.94);
+  background: rgba(26, 39, 43, 0.94);
   border: 1px solid var(--hairline);
   box-shadow: var(--shadow-pop);
   backdrop-filter: blur(44px) saturate(160%);
@@ -1253,7 +1253,7 @@ select option, select optgroup { background: #192428; color: var(--text); }
   justify-content: space-between;
   padding: 24px 24px 14px;
   border-bottom: 1px solid var(--separator);
-  background: rgba(24, 24, 29, 0.86);
+  background: rgba(26, 39, 43, 0.86);
   backdrop-filter: blur(30px);
 }
 .modal-head h3 { margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -0.02em; }
@@ -1267,7 +1267,7 @@ select option, select optgroup { background: #192428; color: var(--text); }
   gap: 10px;
   padding: 16px 24px;
   border-top: 1px solid var(--separator);
-  background: rgba(24, 24, 29, 0.86);
+  background: rgba(26, 39, 43, 0.86);
   backdrop-filter: blur(30px);
 }
 

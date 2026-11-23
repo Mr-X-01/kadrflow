@@ -328,7 +328,7 @@ function heroHTML() {
     <div class="hero-intro">
       <div>
         <div class="eyebrow">${ICONS.spark} Автонарезка для Shorts · Reels · TikTok</div>
-        <h1 class="hero-title">Одно видео —<br><span class="grad">десятки вирусных клипов</span></h1>
+        <h1 class="hero-title">Длинное видео —<br><span class="grad">готовые клипы</span></h1>
         <p class="hero-sub">Добавьте ссылку или видеофайл. KadrFlow найдёт яркие моменты, кадрирует их под нужный формат и наложит субтитры.</p>
       </div>
       <figure class="hero-visual" aria-label="Пример кадрирования в вертикальный клип">
