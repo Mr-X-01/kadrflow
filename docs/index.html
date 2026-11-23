@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KadrFlow — длинное видео в вирусные клипы</title>
+<meta name="description" content="KadrFlow нарезает длинные видео и стримы в вертикальные клипы для Shorts, Reels и TikTok. Умный кроп, караоке-субтитры, 50 клипов за запуск. Локально, без облака.">
+<meta property="og:title" content="KadrFlow — длинное видео в вирусные клипы">
+<meta property="og:description" content="Подкасты, интервью и стримы — в готовые Shorts, Reels и TikTok. Локально, на macOS и Windows.">
+<meta property="og:url" content="https://github.com/Mr-X-01/kadrflow">
+<meta property="og:image" content="https://raw.githubusercontent.com/Mr-X-01/kadrflow/main/docs/github/social-preview.png">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<style>
+:root{
+  --bg:#10191c; --panel:rgba(255,255,255,.045); --line:rgba(255,255,255,.09);
+  --text:#f1efe7; --muted:#a8b6b8; --accent:#ff784f; --secondary:#8ed7c2;
+  --grad:#ff784f;
+  --ease:cubic-bezier(.2,.8,.2,1);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 -apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,sans-serif;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+.bg{position:fixed;inset:0;z-index:-2;background:#10191c}
+.bg:after{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:64px 64px;mask-image:radial-gradient(ellipse at 50% 20%,#000 0%,transparent 72%)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 28px}
+nav{position:sticky;top:0;z-index:20;backdrop-filter:blur(22px);background:rgba(7,6,12,.72);border-bottom:1px solid rgba(255,255,255,.06)}
+.nav-in{height:70px;display:flex;align-items:center;gap:26px}
+.brand{display:flex;align-items:center;gap:11px;font-weight:750;font-size:19px;letter-spacing:-.02em}
+.mark{width:34px;height:34px;border-radius:10px;background:#1a272b;border:1px solid rgba(241,239,231,.2);display:grid;place-items:center}
+.mark svg{width:25px;height:25px}
+.links{display:flex;gap:22px;margin-left:14px;font-size:14px;color:#c9d4d2}
+.links a:hover{color:#fff}
+.nav-cta{margin-left:auto;display:flex;gap:10px;align-items:center}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;height:44px;padding:0 20px;border-radius:12px;font-weight:650;font-size:14.5px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:#fff;transition:transform .2s var(--ease),background .2s,border-color .2s;white-space:nowrap}
+.btn:hover{transform:translateY(-1px);background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.18)}
+.btn.primary{background:var(--grad);color:#10191c;border:0;box-shadow:none}
+.btn.primary:hover{box-shadow:0 0 0 2px rgba(255,120,79,.25)}
+.btn.ghost{background:transparent}
+.hero{padding:76px 0 64px;display:grid;grid-template-columns:1.08fr .92fr;gap:50px;align-items:center}
+.eyebrow{display:inline-flex;align-items:center;gap:9px;font-size:12.5px;letter-spacing:.12em;text-transform:uppercase;color:#f4c4af;background:rgba(255,120,79,.12);border:1px solid rgba(255,120,79,.28);padding:8px 13px;border-radius:100px}
+.eyebrow i{width:7px;height:7px;border-radius:50%;background:#5ef2a0;box-shadow:0 0 12px #5ef2a0}
+h1{font-size:clamp(40px,5.2vw,70px);line-height:1.02;letter-spacing:-.045em;margin:22px 0 20px;font-weight:800}
+.grad{color:#ffac8e}
+.lead{color:#b2c0c1;font-size:18px;max-width:520px;margin:0 0 30px}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap}
+.hero-note{display:flex;gap:18px;margin-top:22px;color:#879b9f;font-size:13px;flex-wrap:wrap}
+.hero-note span{display:flex;align-items:center;gap:7px}
+.hero-note svg{width:15px;height:15px;color:#5ef2a0}
+.phone-wrap{position:relative;display:flex;justify-content:center}
+.phone-wrap:before{content:"";position:absolute;width:min(420px,100%);height:420px;border-radius:50%;background:none;top:70px}
+.phone{position:relative;width:310px;border-radius:46px;background:#192428;border:1px solid rgba(255,255,255,.14);padding:11px;box-shadow:0 40px 90px rgba(0,0,0,.65),0 0 0 1px rgba(255,255,255,.04) inset;transform:rotate(2deg)}
+.phone img{display:block;width:100%;border-radius:36px}
+.phone .notch{position:absolute;left:50%;top:20px;transform:translateX(-50%);width:92px;height:22px;border-radius:12px;background:#10191c;z-index:2}
+.float{position:absolute;background:rgba(18,15,27,.86);border:1px solid rgba(255,255,255,.13);border-radius:14px;padding:10px 14px;font-size:12.5px;font-weight:650;backdrop-filter:blur(14px);box-shadow:0 16px 40px rgba(0,0,0,.5);display:flex;align-items:center;gap:8px}
+.float.a{top:66px;right:0}
+.float.b{bottom:58px;left:-6px}
+.float i{width:8px;height:8px;border-radius:50%;background:#5ef2a0;box-shadow:0 0 10px #5ef2a0}
+section{padding:74px 0}
+.kicker{color:#f4a485;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:700}
+h2{font-size:clamp(30px,3.6vw,44px);line-height:1.08;letter-spacing:-.03em;margin:12px 0 14px;font-weight:780}
+.sub{color:var(--muted);max-width:620px;margin:0;font-size:16.5px}
+.platforms{display:flex;gap:10px;flex-wrap:wrap;margin-top:34px}
+.plat{font-size:13px;color:#c9d4d2;border:1px solid var(--line);background:rgba(255,255,255,.04);padding:9px 14px;border-radius:10px}
+.features{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:36px}
+.card{position:relative;background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.022));border:1px solid var(--line);border-radius:20px;padding:26px;overflow:hidden;transition:transform .25s var(--ease),border-color .25s}
+.card:hover{transform:translateY(-3px);border-color:rgba(255,255,255,.18)}
+.card:before{content:"";position:absolute;inset:0;background:radial-gradient(320px 160px at 10% 0%,rgba(255,120,79,.18),transparent 70%);opacity:0;transition:opacity .25s}
+.card:hover:before{opacity:1}
+.ico{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;background:rgba(255,120,79,.14);border:1px solid rgba(255,120,79,.28);margin-bottom:16px}
+.ico svg{width:22px;height:22px;color:#f4c4af}
+.card h3{margin:0 0 8px;font-size:17px;letter-spacing:-.01em}
+.card p{margin:0;color:#a8b6b8;font-size:14px;line-height:1.55}
+.shots{display:grid;grid-template-columns:1.05fr .95fr;gap:18px;margin-top:34px;align-items:start}
+.shot{border:1px solid var(--line);border-radius:20px;overflow:hidden;background:rgba(255,255,255,.03);box-shadow:0 24px 60px rgba(0,0,0,.35)}
+.shot img{display:block;width:100%}
+.shot .cap{display:flex;justify-content:space-between;gap:10px;padding:14px 18px;color:#afbfbd;font-size:12.5px;border-top:1px solid rgba(255,255,255,.06)}
+.shot .cap b{color:#fff;font-weight:600}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:36px;counter-reset:s}
+.step{position:relative;padding:24px 20px 20px;border-radius:18px;border:1px solid var(--line);background:rgba(255,255,255,.035)}
+.step:before{counter-increment:s;content:counter(s,decimal-leading-zero);font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#f4a485;letter-spacing:.12em}
+.step h4{margin:12px 0 6px;font-size:15.5px}
+.step p{margin:0;color:#a8b6b8;font-size:13.5px}
+.dl{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:34px}
+.dlcard{border:1px solid var(--line);border-radius:22px;padding:28px;background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.02));display:flex;flex-direction:column;gap:10px}
+.dlcard .os{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#f4a485;font-weight:700}
+.dlcard h3{margin:0;font-size:22px;letter-spacing:-.02em}
+.dlcard p{margin:0;color:#a8b6b8;font-size:14px}
+.dlcard .meta{margin-top:auto;padding-top:18px;display:flex;align-items:center;justify-content:space-between;gap:10px;color:#879b9f;font-size:12.5px}
+.faq{margin-top:34px;display:grid;gap:10px}
+details{border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.03);padding:0 18px}
+summary{cursor:pointer;padding:16px 0;font-weight:600;font-size:15px;list-style:none;display:flex;justify-content:space-between;gap:12px}
+summary::-webkit-details-marker{display:none}
+summary:after{content:"+";color:#f4a485;font-size:19px;line-height:1}
+details[open] summary:after{content:"–"}
+details p{color:#a8b6b8;font-size:14px;margin:0 0 16px}
+footer{border-top:1px solid rgba(255,255,255,.07);padding:38px 0 50px;color:#879b9f;font-size:13px}
+.foot{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center}
+.foot a{color:#c9d4d2}
+.foot a:hover{color:#fff}
+.telegram{display:inline-flex;align-items:center;gap:9px;background:rgba(42,171,238,.12);border:1px solid rgba(42,171,238,.3);color:#bfe9ff;padding:9px 14px;border-radius:100px;font-weight:600;font-size:13px}
+.telegram:hover{background:rgba(42,171,238,.2)}
+@media (max-width:960px){
+  .hero{grid-template-columns:1fr;padding-top:48px;gap:36px}
+  .phone-wrap{order:-1}
+  .phone{width:270px}
+  .features{grid-template-columns:1fr 1fr}
+  .steps{grid-template-columns:1fr 1fr}
+  .shots,.dl{grid-template-columns:1fr}
+  .links{display:none}
+}
+@media (max-width:620px){
+  .wrap{padding:0 18px}
+  .hero{padding:36px 0 30px}
+  h1{font-size:40px}
+  .lead{font-size:16px}
+  .features{grid-template-columns:1fr}
+  .steps{grid-template-columns:1fr}
+  section{padding:52px 0}
+  .nav-cta .btn.ghost{display:none}
+  .float.a{right:0}
+  .float.b{left:0}
+}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+
+<nav>
+  <div class="wrap nav-in">
+    <a class="brand" href="#top">
+      <span class="mark"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M4 12V4h8M20 4h8v8M4 20v8h8M20 28h8v-8" stroke="#F1EFE7" stroke-width="3"/><path d="M21 9 11 23" stroke="#FF784F" stroke-width="4"/></svg></span>
+      KadrFlow
+    </a>
+    <div class="links">
+      <a href="#features">Возможности</a>
+      <a href="#shots">Скриншоты</a>
+      <a href="#how">Как работает</a>
+      <a href="#download">Скачать исходники</a>
+    </div>
+    <div class="nav-cta">
+      <a class="btn ghost" href="https://t.me/shizukes">Telegram</a>
+      <a class="btn primary" href="#download">Скачать исходники</a>
+    </div>
+  </div>
+</nav>
+
+<main id="top">
+  <div class="wrap hero">
+    <div>
+      <span class="eyebrow"><i></i> локальная обработка · без подписки</span>
+      <h1>Длинное видео —<br><span class="grad">в вирусные клипы</span></h1>
+      <p class="lead">Подкасты, интервью, вебинары и стримы — в готовые вертикальные Shorts, Reels и TikTok. Сам находит моменты, кадрирует по лицу и накладывает караоке-субтитры.</p>
+      <div class="hero-actions">
+        <a class="btn primary" href="https://github.com/Mr-X-01/kadrflow/archive/refs/heads/main.zip">Исходники для macOS</a>
+        <a class="btn" href="https://github.com/Mr-X-01/kadrflow/archive/refs/heads/main.zip">Исходники для Windows</a>
+      </div>
+      <div class="hero-note">
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m5 12 5 5L20 7"/></svg> Apple Silicon и Windows 10/11</span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m5 12 5 5L20 7"/></svg> монтаж выполняется локально</span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m5 12 5 5L20 7"/></svg> 50 клипов за запуск</span>
+      </div>
+    </div>
+    <div class="phone-wrap">
+      <div class="phone"><span class="notch"></span><img src="screenshots/kadrflow-mobile.png" alt="Мобильный интерфейс KadrFlow"></div>
+      <div class="float a"><i></i> 9:16 · готово</div>
+      <div class="float b">🔥 хук найден</div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="platforms">
+      <span class="plat">YouTube</span><span class="plat">Twitch</span><span class="plat">Kick</span>
+      <span class="plat">TikTok</span><span class="plat">Instagram</span><span class="plat">VK</span>
+      <span class="plat">X</span><span class="plat">mp4 / m3u8</span><span class="plat">локальные файлы</span>
+    </div>
+  </div>
+
+  <section id="features">
+    <div class="wrap">
+      <div class="kicker">Зачем это нужно</div>
+      <h2>Не «ещё один редактор»,<br>а конвейер клипов</h2>
+      <p class="sub">Вставили ссылку — получили пачку вертикальных роликов с хуком, субтитрами и умным кадром. Всё на вашем компьютере.</p>
+      <div class="features">
+        <div class="card"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7v5l3 3"/></svg></div><h3>Находит моменты сам</h3><p>Речь, паузы, громкость, эмоции и цифры. Пересекающиеся фрагменты отбрасываются, слабые — не попадают в пачку.</p></div>
+        <div class="card"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16M15 4v16"/></svg></div><h3>Умный кроп 9:16</h3><p>Следит за лицом и не режет говорящего. Если лица нет — аккуратный размытый фон вместо чёрных полос.</p></div>
+        <div class="card"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h10M4 18h7"/></svg></div><h3>Караоке-субтитры</h3><p>Подсветка слов, спокойный темп, 24 шрифта и загрузка своих TTF/OTF. Цвет, размер и позиция — в редакторе.</p></div>
+        <div class="card"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 17V7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10"/><path d="m8 21 4-4 4 4"/></svg></div><h3>До 50 клипов за раз</h3><p>Один запуск — пакет на неделю публикаций. Каждый клип можно поправить и перерендерить отдельно.</p></div>
+        <div class="card"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M5 8l7-5 7 5M5 16l7 5 7-5"/></svg></div><h3>Прямой эфир — на лету</h3><p>Клипы появляются, пока стрим ещё идёт. Готовый клип можно перерендерить из записи, даже если исходника нет.</p></div>
+        <div class="card"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div><h3>Приватно по умолчанию</h3><p>Обработка и рендер выполняются локально. Внешние запросы нужны для поиска и загрузки источников; отправка на YouTube начинается по вашему выбору.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="shots">
+    <div class="wrap">
+      <div class="kicker">Интерфейс</div>
+      <h2>Монтажный стол без лишнего шума</h2>
+      <p class="sub">Настройки собраны в одном месте, прогресс виден, а редактор открывается прямо на клипе.</p>
+      <div class="shots">
+        <div class="shot"><img src="screenshots/kadrflow-home.png" alt="Главный экран KadrFlow"><div class="cap"><b>Главный экран</b><span>ссылка → настройки → нарезка</span></div></div>
+        <div class="shot"><img src="screenshots/kadrflow-settings.png" alt="Настройки KadrFlow"><div class="cap"><b>Настройки</b><span>кодирование · папки · YouTube</span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="kicker">Как это работает</div>
+      <h2>Четыре шага до готовых файлов</h2>
+      <div class="steps">
+        <div class="step"><h4>Ссылка или файл</h4><p>YouTube, Twitch, TikTok, VK, X, прямой mp4/m3u8 или файл с диска.</p></div>
+        <div class="step"><h4>Распознавание</h4><p>Whisper Small с таймингами слов. Длинные видео — частями, без зависаний.</p></div>
+        <div class="step"><h4>Моменты и кроп</h4><p>Скоринг вирусности, отбор без пересечений, кадрирование по лицу.</p></div>
+        <div class="step"><h4>Рендер и экспорт</h4><p>MP4 1080×1920, субтитры, хук. Скачать по одному или всё ZIP.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="download">
+    <div class="wrap">
+      <div class="kicker">Скачать</div>
+      <h2>Исходники для macOS и Windows</h2>
+      <p class="sub">Скачайте исходный код и запустите локальный сайт. Первый запуск установит зависимости; модель речи может скачаться при обработке.</p>
+      <div class="dl">
+        <div class="dlcard">
+          <span class="os">macOS 11+ · Apple Silicon</span>
+          <h3>KadrFlow для Mac</h3>
+          <p>M1 / M2 / M3 / M4. Запустите ./run.sh в папке проекта.</p>
+          <div class="meta"><span>Python 3.12 · ZIP</span><a class="btn primary" href="https://github.com/Mr-X-01/kadrflow/archive/refs/heads/main.zip">Скачать исходники</a></div>
+        </div>
+        <div class="dlcard">
+          <span class="os">Windows 10/11 · x64</span>
+          <h3>KadrFlow для Windows</h3>
+          <p>Распакуйте и выполните py -3.12 run_web.py в PowerShell.</p>
+          <div class="meta"><span>Python 3.12 · ZIP</span><a class="btn" href="https://github.com/Mr-X-01/kadrflow/archive/refs/heads/main.zip">Скачать исходники</a></div>
+        </div>
+      </div>
+      <div class="faq">
+        <details><summary>Нужен интернет?</summary><p>Интернет нужен для поиска и скачивания видео, проверки обновлений и публикации на YouTube. Нарезка, распознавание и рендер идут локально.</p></details>
+        <details><summary>Куда уходят видео и звук?</summary><p>Проекты хранятся локально в папке <code>data</code> при запуске из исходников. На YouTube загружается только выбранный вами готовый клип после подтверждения.</p></details>
+        <details><summary>Можно свои шрифты?</summary><p>Да, TTF/OTF загружаются в редакторе и шаблоне. В комплекте 24 шрифта, включая рукописные и спортивные.</p></details>
+        <details><summary>Есть готовая сборка?</summary><p>Пока опубликованы исходники. Для запуска в браузере нужен Python 3.12. Проверенные сборки появятся в разделе Releases.</p></details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <div>© 2026 KadrFlow · сделано для коротких видео</div>
+    <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">
+      <a href="https://github.com/Mr-X-01/kadrflow">GitHub</a>
+      <a class="telegram" href="https://t.me/shizukes">Telegram · @shizukes ↗</a>
+    </div>
+  </div>
+</footer>
+</body>
+</html>
