@@ -47,7 +47,7 @@ jobs:
           python -m unittest
           tests.test_analyze tests.test_render tests.test_cut_pauses
           tests.test_reactions tests.test_ytdlp_ffmpeg tests.test_diagnostics
-          tests.test_monitor -v
+          tests.test_monitor tests.test_subtitles -v
 
       # Полный набор — сигнал, а не блокер: на Windows могут всплыть
       # платформенные мелочи, но артефакт для теста всё равно нужен.
@@ -101,19 +101,41 @@ jobs:
         shell: pwsh
         run: Compress-Archive -Path dist\KadrFlow -DestinationPath "KadrFlow-${{ steps.version.outputs.value }}-windows-x64.zip"
 
+      - name: Build Windows installer
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          New-Item -ItemType Directory -Force .venv\tools | Out-Null
+          $installer = Join-Path $env:RUNNER_TEMP "innosetup-7.1.1-x64.exe"
+          Invoke-WebRequest "https://github.com/jrsoftware/issrc/releases/download/is-7_1_1/innosetup-7.1.1-x64.exe" -OutFile $installer
+          $signature = Get-AuthenticodeSignature $installer
+          if ($signature.Status -ne "Valid" -or $signature.SignerCertificate.Subject -notmatch "Pyrsys") { throw "Invalid Inno Setup signature" }
+          $inno = Join-Path $env:RUNNER_TEMP "InnoSetup7"
+          $proc = Start-Process $installer -ArgumentList @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', "/DIR=$inno") -PassThru -Wait -WindowStyle Hidden
+          if ($proc.ExitCode -ne 0) { throw "Inno Setup installation failed: $($proc.ExitCode)" }
+          $webview = ".venv\tools\MicrosoftEdgeWebview2Setup.exe"
+          Invoke-WebRequest "https://go.microsoft.com/fwlink/p/?LinkId=2124703" -OutFile $webview
+          $signature = Get-AuthenticodeSignature $webview
+          if ($signature.Status -ne "Valid" -or $signature.SignerCertificate.Subject -notmatch "Microsoft") { throw "Invalid WebView2 signature" }
+          & (Join-Path $inno "ISCC.exe") "/DAppVersion=${{ steps.version.outputs.value }}" KadrFlow.iss
+          if ($LASTEXITCODE -ne 0) { throw "Installer build failed" }
+          Move-Item "release\KadrFlow-${{ steps.version.outputs.value }}-Setup-windows-x64.exe" .
+
       - name: Checksums
         shell: pwsh
         run: |
-          $zip = Get-ChildItem "KadrFlow-*-windows-x64.zip"
-          $hash = (Get-FileHash $zip.FullName -Algorithm SHA256).Hash.ToLower()
-          "$hash  $($zip.Name)" | Out-File -Encoding ascii SHA256SUMS-windows.txt
+          Get-ChildItem "KadrFlow-*-windows-x64.zip", "KadrFlow-*-Setup-windows-x64.exe" | ForEach-Object {
+            $hash = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower()
+            "$hash  $($_.Name)"
+          } | Out-File -Encoding ascii SHA256SUMS-windows.txt
           Get-Content SHA256SUMS-windows.txt
 
       - uses: actions/upload-artifact@v4
         with:
-          name: windows-zip
+          name: windows-release
           path: |
             KadrFlow-*-windows-x64.zip
+            KadrFlow-*-Setup-windows-x64.exe
             SHA256SUMS-windows.txt
 
   release:
@@ -133,6 +155,6 @@ jobs:
           path: artifacts
       - uses: softprops/action-gh-release@v2
         with:
-          files: artifacts/windows-zip/*
+          files: artifacts/windows-release/*
           body_path: release/v${{ steps.version.outputs.value }}/RELEASE_NOTES.md
           fail_on_unmatched_files: true
